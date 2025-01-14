@@ -20,13 +20,19 @@ public class Code2048 extends Applet implements ActionListener
 	    {2, 0, 0, 0},
 	    {0, 0, 0, 0},
 	    {0, 0, 0, 0}};
+    int b2[] [] = {{2, 0, 0, 0},
+	    {2, 0, 0, 0},
+	    {0, 0, 0, 0},
+	    {0, 0, 0, 0}};
     int score = 0;
     JLabel Dscore;
-
+    JButton undo;
+    JButton win;
+    boolean winB = false;
     public void init ()
     {
 	p_card = new Panel ();
-	p_card.setLayout (cdLayout);        
+	p_card.setLayout (cdLayout);
 	screen1 ();
 	screen2 ();
 	screen3 ();
@@ -59,10 +65,12 @@ public class Code2048 extends Applet implements ActionListener
     { //screen 2 is set up.
 	card2 = new Panel ();
 	card2.setBackground (Color.white);
+	JLabel instructions = new JLabel (createImageIcon ("instructions.PNG"));
 	JLabel title = new JLabel ("Instructions");
 	JButton next = new JButton ("Next");
 	next.setActionCommand ("s3");
 	next.addActionListener (this);
+	card2.add (instructions);
 	card2.add (title);
 	card2.add (next);
 	p_card.add ("2", card2);
@@ -75,7 +83,8 @@ public class Code2048 extends Applet implements ActionListener
 	card3.setBackground (new Color (239, 228, 176));
 	JLabel title = new JLabel ("2048");
 	title.setFont (new Font ("Arial", Font.BOLD, 45));
-	title.setPreferredSize (new Dimension (400, 100));
+	title.setPreferredSize (new Dimension (400, 70));
+	title.setHorizontalAlignment (0);
 	JButton reset = new JButton ("reset");
 	reset.setForeground (Color.white);
 	reset.setBackground (Color.black);
@@ -106,7 +115,9 @@ public class Code2048 extends Applet implements ActionListener
 	left.setBackground (Color.black);
 	left.setActionCommand ("left");
 	left.addActionListener (this);
-	Dscore = new JLabel ("score; 000" );
+	Dscore = new JLabel ("score; 000");
+	win = new JButton ("win");
+	undo = new JButton ("undo");
 	Dscore.setPreferredSize (new Dimension (100, 100));
 	//Set up grid
 	Panel p = new Panel (new GridLayout (row, col));
@@ -135,17 +146,22 @@ public class Code2048 extends Applet implements ActionListener
 	card3.add (instruction);
 	card3.add (reset);
 	card3.add (Dscore);
+	card3.add (undo);
+	card3.add (win);
     }
 
 
     public void screen4 ()
     { //screen 4 is set up.
 	card4 = new Panel ();
-	card4.setBackground (Color.yellow);
+	//card4.setBackground (Color.yellow);
 	JLabel title = new JLabel ("You Win!");
-	JButton next = new JButton ("Next");
-	next.setActionCommand ("s5");
+	title.setFont (new Font ("Arial", Font.BOLD, 45));
+	JLabel thank = new JLabel (createImageIcon ("crown.jpg"));
+	JButton next = new JButton ("End game");
+	next.setActionCommand ("s6");
 	next.addActionListener (this);
+	card4.add (thank);
 	card4.add (title);
 	card4.add (next);
 	p_card.add ("4", card4);
@@ -196,33 +212,65 @@ public class Code2048 extends Applet implements ActionListener
 		move++;
 	    }
 	}
-Dscore.setText("score " + score);
+	Dscore.setText ("score " + score);
     }
+
 
     public void picknew ()
     {
-    int empty = 0; 
-    for (int i = 0 ; i < row ; i++)
+	int empty = 0;
+	for (int i = 0 ; i < row ; i++)
 	{
 	    for (int j = 0 ; j < col ; j++)
 	    {
 		if (b [i] [j] == 0)
-		empty++;
+		    empty++;
 	    }
 	}
 	if (empty > 0)
 	{
-	int x = (int) (Math.random () * 4);
-	int y = (int) (Math.random () * 4);
-	while (b [x] [y] != 0)
+	    int x = (int) (Math.random () * 4);
+	    int y = (int) (Math.random () * 4);
+	    while (b [x] [y] != 0)
+	    {
+		x = (int) (Math.random () * 4);
+		y = (int) (Math.random () * 4);
+	    }
+	    b [x] [y] = 2;
+	}
+	else
+	    cdLayout.show (p_card, "5");
+    }
+
+
+    public void wincondition ()
+    {
+	for (int n = 0 ; n < 4 ; n++)
 	{
-	    x = (int) (Math.random () * 4);
-	    y = (int) (Math.random () * 4);
+	    for (int i = 0 ; i < 3 ; i++)
+	    {
+		if (b [n] [i] == 2048 && winB == false)
+		{
+		    win.setActionCommand ("s4");
+		    win.addActionListener (this);
+		    win.setForeground (Color.white);
+		    win.setBackground (Color.black);
+		    winB = true;
+		}
+	    }
 	}
-	b [x] [y] = 2;
+    }
+
+
+    public void store ()
+    {
+	for (int n = 0 ; n < 4 ; n++)
+	{
+	    for (int i = 0 ; i < 3 ; i++)
+	    {
+		b2 [n] [i] = b [n] [i];
+	    }
 	}
-	else 
-	cdLayout.show (p_card, "5");
     }
 
 
@@ -271,13 +319,13 @@ Dscore.setText("score " + score);
 		b [1] [n] = 0;
 		score += b [0] [n];
 	    }
-	    if (b [2] [n] == b [1] [n]&& (b [1] [n] != 0) && (b [2] [n] != 0))
+	    if (b [2] [n] == b [1] [n] && (b [1] [n] != 0) && (b [2] [n] != 0))
 	    {
 		b [1] [n] += b [2] [n];
 		b [2] [n] = 0;
 		score += b [1] [n];
 	    }
-	    if (b [3] [n] == b [2] [n]&& (b [2] [n] != 0) && (b [3] [n] != 0))
+	    if (b [3] [n] == b [2] [n] && (b [2] [n] != 0) && (b [3] [n] != 0))
 	    {
 		b [2] [n] += b [3] [n];
 		b [3] [n] = 0;
@@ -289,12 +337,14 @@ Dscore.setText("score " + score);
 
     public void moveUp ()
     {
+	store ();
 	ShuffleUp ();
 	UpBuddies ();
 	ShuffleUp ();
 	ShuffleUp ();
 	picknew ();
 	redraw ();
+	wincondition ();
     }
 
 
@@ -337,19 +387,19 @@ Dscore.setText("score " + score);
     {
 	for (int n = 0 ; n < 4 ; n++)
 	{
-	    if (b [3] [n] == b [2] [n]&& (b [3] [n] != 0) && (b [2] [n] != 0))
+	    if (b [3] [n] == b [2] [n] && (b [3] [n] != 0) && (b [2] [n] != 0))
 	    {
 		b [2] [n] += b [3] [n];
 		b [3] [n] = 0;
 		score += b [2] [n];
 	    }
-	    if (b [2] [n] == b [1] [n]&& (b [1] [n] != 0) && (b [2] [n] != 0))
+	    if (b [2] [n] == b [1] [n] && (b [1] [n] != 0) && (b [2] [n] != 0))
 	    {
 		b [1] [n] += b [2] [n];
 		b [2] [n] = 0;
 		score += b [1] [n];
 	    }
-	    if (b [1] [n] == b [0] [n]&& (b [1] [n] != 0) && (b [0] [n] != 0))
+	    if (b [1] [n] == b [0] [n] && (b [1] [n] != 0) && (b [0] [n] != 0))
 	    {
 		b [0] [n] += b [1] [n];
 		b [1] [n] = 0;
@@ -361,12 +411,14 @@ Dscore.setText("score " + score);
 
     public void moveDown ()
     {
+	store ();
 	ShuffleDown ();
 	DownBuddies ();
 	ShuffleDown ();
 	ShuffleDown ();
 	picknew ();
 	redraw ();
+	wincondition ();
     }
 
 
@@ -407,19 +459,19 @@ Dscore.setText("score " + score);
     {
 	for (int n = 0 ; n < 4 ; n++)
 	{
-	    if (b [n] [1] == b [n] [0]&& (b [n] [1] != 0) && (b [n] [0] != 0))
+	    if (b [n] [1] == b [n] [0] && (b [n] [1] != 0) && (b [n] [0] != 0))
 	    {
 		b [n] [0] += b [n] [1];
 		b [n] [1] = 0;
 		score += b [n] [0];
 	    }
-	    if (b [n] [2] == b [n] [1]&& (b [n] [1] != 0) && (b [n] [2] != 0))
+	    if (b [n] [2] == b [n] [1] && (b [n] [1] != 0) && (b [n] [2] != 0))
 	    {
 		b [n] [1] += b [n] [2];
 		b [n] [2] = 0;
 		score += b [n] [1];
 	    }
-	    if (b [n] [3] == b [n] [2]&& (b [n] [2] != 0) && (b [n] [3] != 0))
+	    if (b [n] [3] == b [n] [2] && (b [n] [2] != 0) && (b [n] [3] != 0))
 	    {
 		b [n] [2] += b [n] [3];
 		b [n] [3] = 0;
@@ -431,12 +483,14 @@ Dscore.setText("score " + score);
 
     public void moveLeft ()
     {
+	store ();
 	ShuffleLeft ();
 	LeftBuddies ();
 	ShuffleLeft ();
 	ShuffleLeft ();
 	picknew ();
 	redraw ();
+	wincondition ();
     }
 
 
@@ -479,19 +533,19 @@ Dscore.setText("score " + score);
     {
 	for (int n = 0 ; n < 4 ; n++)
 	{
-	    if (b [n] [3] == b [n] [2]&& (b [n] [3] != 0) && (b [n] [2] != 0))
+	    if (b [n] [3] == b [n] [2] && (b [n] [3] != 0) && (b [n] [2] != 0))
 	    {
 		b [n] [2] += b [n] [3];
 		b [n] [3] = 0;
 		score += b [n] [2];
 	    }
-	    if (b [n] [2] == b [n] [1]&& (b [n] [1] != 0) && (b [n] [2] != 0))
+	    if (b [n] [2] == b [n] [1] && (b [n] [1] != 0) && (b [n] [2] != 0))
 	    {
 		b [n] [1] += b [n] [2];
 		b [n] [2] = 0;
 		score += b [n] [1];
 	    }
-	    if (b [n] [1] == b [n] [0]&& (b [n] [1] != 0) && (b [n] [0] != 0))
+	    if (b [n] [1] == b [n] [0] && (b [n] [1] != 0) && (b [n] [0] != 0))
 	    {
 		b [n] [0] += b [n] [1];
 		b [n] [1] = 0;
@@ -503,12 +557,14 @@ Dscore.setText("score " + score);
 
     public void moveRight ()
     {
+	store ();
 	ShuffleRight ();
 	RightBuddies ();
 	ShuffleRight ();
 	ShuffleRight ();
 	picknew ();
 	redraw ();
+	wincondition ();
     }
 
 
